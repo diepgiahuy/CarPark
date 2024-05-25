@@ -1,4 +1,4 @@
-package domain.model;
+package org.example.carpark.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +14,4 @@ public class CarParkInfo {
     private String address;
     private double latitude;
     private double longitude;
-    private int totalLots;
-
 }
