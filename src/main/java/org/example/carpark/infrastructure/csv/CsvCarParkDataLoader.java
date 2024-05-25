@@ -1,4 +1,4 @@
-package org.example.carpark.adapter.csv;
+package org.example.carpark.infrastructure.csv;
 
 import ch.hsr.geohash.GeoHash;
 import jakarta.annotation.PostConstruct;
@@ -7,8 +7,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.example.carpark.domain.model.CarParkInfo;
-import org.example.carpark.port.service.CarParkDataLoader;
-import org.example.carpark.port.service.CoordinateConversionService;
+import org.example.carpark.domain.service.CarParkDataLoader;
+import org.example.carpark.domain.service.CoordinateConversionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;

@@ -1,6 +1,6 @@
-package org.example.carpark.adapter.service;
+package org.example.carpark.application.service.impl;
 
-import org.example.carpark.port.service.CoordinateConversionService;
+import org.example.carpark.domain.service.CoordinateConversionService;
 import org.locationtech.proj4j.*;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package org.example.carpark.port.service;
+package org.example.carpark.domain.service;
 
 import org.example.carpark.domain.model.CarParkInfo;
 

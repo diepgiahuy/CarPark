@@ -1,4 +1,4 @@
-package org.example.carpark.port.service;
+package org.example.carpark.domain.service;
 
 public interface CoordinateConversionService {
     double[] convert(double xCoord, double yCoord);
