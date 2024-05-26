@@ -19,25 +19,11 @@ public class CarParkInfoRepositoryImpl implements CarParkInfoRepository {
         this.jpaCarParkInfoRepository = jpaCarParkInfoRepository;
     }
     @Override
-    public List<CarParkInfo> findAllByCarParkNoIn(List<String> carParkIds) {
-        return jpaCarParkInfoRepository.findAllByCarParkNo(carParkIds);
-    }
-
-    @Override
     public List<CarParkInfo> saveAll(Iterable<CarParkInfo> carParkInfo) {
         return jpaCarParkInfoRepository.saveAll(carParkInfo);
     }
     @Override
     public long count(){
         return jpaCarParkInfoRepository.count();
-    }
-    @Override
-    public List<CarParkInfo> findAll() {
-        return jpaCarParkInfoRepository.findAll();
-    }
-
-    @Override
-    public CarParkInfo save(CarParkInfo carParkInfo) {
-        return jpaCarParkInfoRepository.save(carParkInfo);
     }
 }

@@ -4,7 +4,7 @@ package org.example.carpark.application.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.carpark.application.dto.CarParkAvailabilityResponse;
-import org.example.carpark.application.dto.CarParkAvailabilityUpdateResponse;
+import org.example.carpark.application.dto.UpdateResponse;
 import org.example.carpark.domain.model.CarParkAvailability;
 import org.example.carpark.domain.repository.CarParkAvailabilityRepository;
 import org.example.carpark.domain.service.CarParkAvailabilityService;
@@ -35,14 +35,14 @@ public class CarParkAvailabilityServiceImpl implements CarParkAvailabilityServic
     }
 
     @Override
-    public CarParkAvailabilityUpdateResponse fetchAvailability() {
+    public UpdateResponse fetchAvailability() {
         try {
             String jsonResponse = restTemplate.getForObject(url, String.class);
             CarParkAvailabilityResponse response = objectMapper.readValue(jsonResponse, CarParkAvailabilityResponse.class);
             List<CarParkAvailability> availabilities = transformToDomainModel(response);
 
-            carParkAvailabilityRepository.saveAll(availabilities);
-            return new CarParkAvailabilityUpdateResponse(availabilities.size(), availabilities);
+            List<CarParkAvailability> carParkAvailabilities = carParkAvailabilityRepository.saveAll(availabilities);
+            return new UpdateResponse(carParkAvailabilities.size());
         } catch (Exception e) {
             log.error("Failed to fetch car park availability", e);
             throw new CarParkAvailabilityException("Failed to fetch car park availability", e);

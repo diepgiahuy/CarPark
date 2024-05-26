@@ -15,7 +15,7 @@ public class CarParkAvailabilityScheduler {
         this.carParkAvailabilityService = carParkAvailabilityService;
     }
 
-    @Scheduled(initialDelay = 10000, fixedRate = Long.MAX_VALUE)
+    @Scheduled(initialDelay = 60000, fixedRate = 600000)
     public void scheduleAvailabilityFetch() {
         carParkAvailabilityService.fetchAvailability();
     }
