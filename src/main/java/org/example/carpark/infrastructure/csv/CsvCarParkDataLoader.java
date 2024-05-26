@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
 @Component
 @Slf4j
 public class CsvCarParkDataLoader implements CarParkDataLoader {
@@ -28,6 +29,13 @@ public class CsvCarParkDataLoader implements CarParkDataLoader {
     private final String csvFilePath;
     private final CarParkInfoRepository carParkInfoRepository;
 
+    /**
+     * Constructs a CsvCarParkDataLoader with the specified dependencies.
+     *
+     * @param coordinateConversionService the service for converting coordinates
+     * @param csvFilePath the path to the CSV file
+     * @param carParkInfoRepository the repository for storing car park information
+     */
     @Autowired
     public CsvCarParkDataLoader(CoordinateConversionService coordinateConversionService,
                                 @Value("${csv.file.path}") String csvFilePath,
@@ -36,11 +44,22 @@ public class CsvCarParkDataLoader implements CarParkDataLoader {
         this.csvFilePath = csvFilePath;
         this.carParkInfoRepository = carParkInfoRepository;
     }
+
+    /**
+     * Initializes the loader by loading car park data if it does not already exist.
+     */
     @PostConstruct
     public void init() {
         loadCarParkData(false);
     }
 
+    /**
+     * Loads car park data from the CSV file.
+     * If data already exists and force load is not requested, it skips the loading.
+     *
+     * @param isForce if true, forces reloading the data even if it already exists
+     * @return an UpdateResponse indicating the number of rows loaded
+     */
     @Override
     public UpdateResponse loadCarParkData(boolean isForce) {
         if (carParkInfoRepository.count() > 0 && !isForce) {
@@ -69,13 +88,20 @@ public class CsvCarParkDataLoader implements CarParkDataLoader {
             }
 
             carParkInfoRepository.saveAll(carParkInfoList);
-            log.info("Loaded car park data from CSV into the database {}.",carParkInfoList.size());
+            log.info("Loaded car park data from CSV into the database {}.", carParkInfoList.size());
             return new UpdateResponse(carParkInfoList.size());
         } catch (Exception e) {
             throw new RuntimeException("Error loading car park data from CSV", e);
         }
     }
 
+    /**
+     * Converts coordinates from SVY21 to WGS84 format.
+     *
+     * @param xCoord the X coordinate in SVY21 format
+     * @param yCoord the Y coordinate in SVY21 format
+     * @return an array containing the converted latitude and longitude
+     */
     private double[] convertCoordinates(String xCoord, String yCoord) {
         double x = Double.parseDouble(xCoord);
         double y = Double.parseDouble(yCoord);

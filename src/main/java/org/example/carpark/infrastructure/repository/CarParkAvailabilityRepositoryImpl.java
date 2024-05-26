@@ -22,11 +22,11 @@ public class CarParkAvailabilityRepositoryImpl implements CarParkAvailabilityRep
 
     @Override
     public Page<CarParkInfoResponse> findAvailableCarParks(double latitude, double longitude, Pageable pageable) {
-        return jpaCarParkAvailabilityRepository.findAvailableCarParks(latitude,longitude,pageable);
+        return jpaCarParkAvailabilityRepository.findAvailableCarParks(latitude, longitude, pageable);
     }
 
     @Override
     public List<CarParkAvailability> saveAll(Iterable<CarParkAvailability> carParkAvailabilities) {
-       return jpaCarParkAvailabilityRepository.saveAll(carParkAvailabilities);
+        return jpaCarParkAvailabilityRepository.saveAll(carParkAvailabilities);
     }
 }

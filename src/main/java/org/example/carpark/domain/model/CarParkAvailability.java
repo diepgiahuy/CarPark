@@ -1,6 +1,8 @@
 package org.example.carpark.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,8 +33,8 @@ public class CarParkAvailability {
         if (o == null || getClass() != o.getClass()) return false;
         CarParkAvailability that = (CarParkAvailability) o;
         return Objects.equals(carParkNo, that.carParkNo) &&
-            Objects.equals(totalLots, that.totalLots) &&
-            Objects.equals(availableLots, that.availableLots);
+                Objects.equals(totalLots, that.totalLots) &&
+                Objects.equals(availableLots, that.availableLots);
     }
 
     @Override

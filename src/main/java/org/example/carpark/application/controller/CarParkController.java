@@ -8,12 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.*;
-import org.example.carpark.application.dto.UpdateResponse;
 import org.example.carpark.application.dto.CarParkInfoResponse;
+import org.example.carpark.application.dto.UpdateResponse;
 import org.example.carpark.domain.service.CarParkAvailabilityService;
 import org.example.carpark.domain.service.CarParkService;
 import org.example.carpark.exception.CarParkAvailabilityException;
-import org.example.carpark.exception.GlobalExceptionHandler;
 import org.example.carpark.infrastructure.csv.CsvCarParkDataLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,7 +33,7 @@ public class CarParkController {
 
     private final CarParkAvailabilityService carParkAvailabilityService;
     private final CarParkService carParkService;
-    private final  CsvCarParkDataLoader carParkDataLoader;
+    private final CsvCarParkDataLoader carParkDataLoader;
 
     @Autowired
     CarParkController(CarParkAvailabilityService carParkAvailabilityService, CarParkService carParkService, CsvCarParkDataLoader carParkDataLoader) {
@@ -46,30 +45,28 @@ public class CarParkController {
     @Operation(summary = "Reload car park data from CSV", description = "Forces a reload of car park data from the CSV file")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "CSV data reloaded successfully",
-                    content = @Content(schema =  @Schema(implementation = UpdateResponse.class))),
-            @ApiResponse(responseCode = "500", description = "Failed to fetch car park availability",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = RuntimeException.class)))
+                    content = @Content(schema = @Schema(implementation = UpdateResponse.class))),
     })
     @GetMapping("/reload-csv")
     public ResponseEntity<UpdateResponse> reloadCsv() {
-        return new ResponseEntity<>(carParkDataLoader.loadCarParkData(true),HttpStatus.OK);
+        return new ResponseEntity<>(carParkDataLoader.loadCarParkData(true), HttpStatus.OK);
 
     }
 
     @Operation(summary = "Fetch car park availability", description = "Fetches the latest car park lot availability data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Car park availability data fetched successfully",
-            content = @Content(schema =  @Schema(implementation = UpdateResponse.class))),
+                    content = @Content(schema = @Schema(implementation = UpdateResponse.class))),
             @ApiResponse(responseCode = "500", description = "Failed to fetch car park availability",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CarParkAvailabilityException.class)))
     })
     @GetMapping("/availability")
     public ResponseEntity<UpdateResponse> fetchCarLotAvailability() {
-        return new ResponseEntity<>(carParkAvailabilityService.fetchAvailability(),HttpStatus.OK);
+        return new ResponseEntity<>(carParkAvailabilityService.fetchAvailability(), HttpStatus.OK);
 
     }
+
     @Operation(summary = "Get nearest car parks", description = "Returns a paginated list of nearest car parks with available parking lots")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
@@ -104,7 +101,7 @@ public class CarParkController {
             @Max(value = 100, message = "Per page must be less than or equal to 100")
             Integer perPage) {
 
-        return new ResponseEntity<>( carParkService.findAllCarPark(
+        return new ResponseEntity<>(carParkService.findAllCarPark(
                 latitude,
                 longitude,
                 page,
