@@ -14,7 +14,7 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CarParkAvailabilityException.class)
+    @ExceptionHandler({CarParkAvailabilityException.class,RuntimeException.class})
     public ResponseEntity<String> handleCarParkAvailabilityException(CarParkAvailabilityException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

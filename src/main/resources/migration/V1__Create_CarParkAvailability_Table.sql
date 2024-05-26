@@ -11,9 +11,5 @@ CREATE TABLE IF NOT EXISTS car_park_availability (
    available_lots INT
 );
 
--- Create indexes
-CREATE INDEX idx_car_park_availability_no_lots
-    ON car_park_availability (car_park_no, available_lots);
-
-CREATE INDEX idx_latitude_longitude_info ON car_park_info(latitude, longitude);
-
+-- for now we don't need to use index on the small dataset but can use in the future
+--CREATE INDEX idx_covering_car_park_availability ON car_park_availability (car_park_no, available_lots);

@@ -12,7 +12,6 @@ import org.example.carpark.domain.service.CarParkDataLoader;
 import org.example.carpark.domain.service.CoordinateConversionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -51,7 +50,7 @@ public class CsvCarParkDataLoader implements CarParkDataLoader {
 
         InputStream resourceStream = getClass().getResourceAsStream(csvFilePath);
         if (resourceStream == null) {
-            throw new ResourceNotFoundException("Resource not found: " + csvFilePath);
+            throw new RuntimeException("Resource not found: " + csvFilePath);
         }
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceStream, StandardCharsets.UTF_8));
