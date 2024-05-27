@@ -15,9 +15,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=root
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    volumes:
-      - .:/app
-      - ./target:/app/target
     networks:
       - app-network
 

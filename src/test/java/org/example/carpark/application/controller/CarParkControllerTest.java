@@ -78,12 +78,12 @@ public class CarParkControllerTest {
                         .param("page", "0")
                         .param("per_page", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].address").value("Sample Address"))
-                .andExpect(jsonPath("$.content[0].latitude").value(1.0))
-                .andExpect(jsonPath("$.content[0].longitude").value(2.0))
+                .andExpect(jsonPath("$.content[0].address").value("Car Park 1"))
+                .andExpect(jsonPath("$.content[0].latitude").value(1.1))
+                .andExpect(jsonPath("$.content[0].longitude").value(1.1))
                 .andExpect(jsonPath("$.content[0].totalLots").value(100))
                 .andExpect(jsonPath("$.content[0].availableLots").value(50))
-                .andExpect(jsonPath("$.content[0].distance").value(1.0));
+                .andExpect(jsonPath("$.content[0].distance").value(0.1));
 
         verify(carParkService, times(1)).findAllCarPark(1.0, 2.0, 0, 1);
     }
