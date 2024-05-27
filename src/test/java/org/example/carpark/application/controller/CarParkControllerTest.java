@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Collections;
 
@@ -78,12 +79,12 @@ public class CarParkControllerTest {
                         .param("page", "0")
                         .param("per_page", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].address").value("Car Park 1"))
-                .andExpect(jsonPath("$.content[0].latitude").value(1.1))
-                .andExpect(jsonPath("$.content[0].longitude").value(1.1))
-                .andExpect(jsonPath("$.content[0].totalLots").value(100))
-                .andExpect(jsonPath("$.content[0].availableLots").value(50))
-                .andExpect(jsonPath("$.content[0].distance").value(0.1));
+                .andExpect(jsonPath("$[0].address").value("Car Park 1"))
+                .andExpect(jsonPath("$[0].distance").value(0.1))
+                .andExpect(jsonPath("$[0].totalLots").value(100))
+                .andExpect(jsonPath("$[0].availableLots").value(50))
+                .andExpect(jsonPath("$[0].latitude").value(1.1))
+                .andExpect(jsonPath("$[0].longitude").value(1.1));
 
         verify(carParkService, times(1)).findAllCarPark(1.0, 2.0, 0, 1);
     }
@@ -149,7 +150,8 @@ public class CarParkControllerTest {
                         .param("page", "0")
                         .param("per_page", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isEmpty());
+                .andExpect(jsonPath("$").isEmpty());
+
 
         verify(carParkService, times(1)).findAllCarPark(1.0, 2.0, 0, 1);
     }
