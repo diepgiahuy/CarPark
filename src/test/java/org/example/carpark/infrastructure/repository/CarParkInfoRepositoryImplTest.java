@@ -2,34 +2,32 @@ package org.example.carpark.infrastructure.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.example.carpark.TestDataUtil;
 import org.example.carpark.domain.model.CarParkInfo;
-import org.example.carpark.infrastructure.persistence.JpaCarParkInfoRepository;
+import org.example.carpark.domain.repository.CarParkInfoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.sql.DataSource;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@Import(CarParkInfoRepositoryImplTest.TestConfig.class)
+@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@ActiveProfiles("test")
+@Import(TestDataUtil.TestConfig.class)
 public class CarParkInfoRepositoryImplTest {
 
     @Autowired
-    private CarParkInfoRepositoryImpl carParkInfoRepository;
+    private CarParkInfoRepository carParkInfoRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -53,30 +51,14 @@ public class CarParkInfoRepositoryImplTest {
         List<CarParkInfo> savedEntities = carParkInfoRepository.saveAll(
                 List.of(carParkInfo3, carParkInfo4)
         );
-
-        assertThat(savedEntities).hasSize(2);
-        assertThat(savedEntities).extracting("carParkNo").containsExactlyInAnyOrder("CarPark3", "CarPark4");
+        assertEquals(savedEntities.size(),2);
+        assertTrue(savedEntities.containsAll(List.of(carParkInfo3,carParkInfo4)));
     }
 
     @Test
     public void testCount() {
         long count = carParkInfoRepository.count();
-        assertThat(count).isEqualTo(2);
+        assertEquals(count,2);
     }
 
-    @TestConfiguration
-    static class TestConfig {
-
-        @Bean
-        public DataSource dataSource() {
-            return new EmbeddedDatabaseBuilder()
-                    .setType(EmbeddedDatabaseType.H2)
-                    .build();
-        }
-
-        @Bean
-        public CarParkInfoRepositoryImpl carParkInfoRepository(JpaCarParkInfoRepository jpaCarParkInfoRepository) {
-            return new CarParkInfoRepositoryImpl(jpaCarParkInfoRepository);
-        }
-    }
 }

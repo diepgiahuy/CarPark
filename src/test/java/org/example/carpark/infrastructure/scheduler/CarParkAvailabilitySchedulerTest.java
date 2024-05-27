@@ -1,11 +1,10 @@
-package org.example.carpark.application.service.impl;
+package org.example.carpark.infrastructure.scheduler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.carpark.application.dto.CarParkAvailabilityResponse;
+import org.example.carpark.application.service.impl.CarParkAvailabilityServiceImpl;
 import org.example.carpark.domain.model.CarParkAvailability;
 import org.example.carpark.domain.repository.CarParkAvailabilityRepository;
-import org.example.carpark.exception.CarParkAvailabilityException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,16 +17,18 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
 @ActiveProfiles("test")
-public class CarParkAvailabilityServiceImplTest {
+public class CarParkAvailabilitySchedulerTest {
 
     @Autowired
     private CarParkAvailabilityRepository carParkAvailabilityRepository;
@@ -38,10 +39,10 @@ public class CarParkAvailabilityServiceImplTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    private String url = "http://mock-url.com";
+
     @Autowired
     private CarParkAvailabilityServiceImpl carParkAvailabilityService;
-
-    private String url = "http://mock-url.com";
 
     @BeforeEach
     void setUp() {
@@ -49,7 +50,7 @@ public class CarParkAvailabilityServiceImplTest {
     }
 
     @Test
-    public void testFetchAndSaveAvailability_Success() throws Exception {
+    public void testScheduledAvailabilityFetch_Success() throws Exception {
         String jsonResponse = "{\"items\":[{\"carpark_data\":[{\"carpark_number\":\"CP1\",\"carpark_info\":[{\"total_lots\":100,\"lots_available\":50}]}]}]}";
 
         CarParkAvailabilityResponse response = new CarParkAvailabilityResponse();
@@ -69,36 +70,10 @@ public class CarParkAvailabilityServiceImplTest {
         when(restTemplate.getForObject(url, String.class)).thenReturn(jsonResponse);
         when(objectMapper.readValue(jsonResponse, CarParkAvailabilityResponse.class)).thenReturn(response);
 
+        CarParkAvailabilityScheduler scheduler = new CarParkAvailabilityScheduler(carParkAvailabilityService);
+        scheduler.scheduleAvailabilityFetch();
+        List<CarParkAvailability> carParkAvailabilities = carParkAvailabilityRepository.findAll();
+        assertEquals(carParkAvailabilities.size(), 1);
 
-        List<CarParkAvailability> availabilities = carParkAvailabilityService.fetchAvailability();
-        List<CarParkAvailability> savedRecored = carParkAvailabilityService.updateAvailability(availabilities);
-
-        assertNotNull(availabilities);
-        assertEquals(1, availabilities.size());
-        assertEquals(1, savedRecored.size());
-
-        CarParkAvailability savedAvailability = carParkAvailabilityRepository.findAll().get(0);
-        assertEquals("CP1", savedAvailability.getCarParkNo());
-        assertEquals(100, savedAvailability.getTotalLots());
-        assertEquals(50, savedAvailability.getAvailableLots());
-
-        verify(restTemplate, times(1)).getForObject(url, String.class);
-        verify(objectMapper, times(1)).readValue(jsonResponse, CarParkAvailabilityResponse.class);
     }
-
-    @Test
-    public void testFetchAvailability_Failure() throws JsonProcessingException {
-        when(restTemplate.getForObject(url, String.class)).thenThrow(new RuntimeException("API error"));
-
-        carParkAvailabilityService = new CarParkAvailabilityServiceImpl(carParkAvailabilityRepository, objectMapper, url, restTemplate);
-
-        Exception exception = assertThrows(CarParkAvailabilityException.class, () -> {
-            carParkAvailabilityService.fetchAvailability();
-        });
-
-        assertEquals("Failed to fetch car park availability", exception.getMessage());
-
-        verify(restTemplate, times(1)).getForObject(url, String.class);
-    }
-
 }

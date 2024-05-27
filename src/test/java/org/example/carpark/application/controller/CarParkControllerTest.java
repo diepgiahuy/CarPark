@@ -55,13 +55,13 @@ public class CarParkControllerTest {
     @Test
     public void testFetchCarLotAvailability() throws Exception {
         UpdateResponse updateResponse = new UpdateResponse(50);
-        when(carParkAvailabilityService.fetchAvailability()).thenReturn(updateResponse);
+        when(carParkAvailabilityService.fetchAndUpdateAvailability()).thenReturn(updateResponse);
 
         mockMvc.perform(get("/carparks/availability"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rowsChanged").value(50));
 
-        verify(carParkAvailabilityService, times(1)).fetchAvailability();
+        verify(carParkAvailabilityService, times(1)).fetchAndUpdateAvailability();
     }
 
     @Test

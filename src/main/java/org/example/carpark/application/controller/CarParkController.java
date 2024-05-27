@@ -63,7 +63,7 @@ public class CarParkController {
     })
     @GetMapping("/availability")
     public ResponseEntity<UpdateResponse> fetchCarLotAvailability() {
-        return new ResponseEntity<>(carParkAvailabilityService.fetchAvailability(), HttpStatus.OK);
+        return new ResponseEntity<>(carParkAvailabilityService.fetchAndUpdateAvailability(), HttpStatus.OK);
 
     }
 

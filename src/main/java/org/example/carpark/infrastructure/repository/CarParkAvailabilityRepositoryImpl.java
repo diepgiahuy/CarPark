@@ -29,4 +29,9 @@ public class CarParkAvailabilityRepositoryImpl implements CarParkAvailabilityRep
     public List<CarParkAvailability> saveAll(Iterable<CarParkAvailability> carParkAvailabilities) {
         return jpaCarParkAvailabilityRepository.saveAll(carParkAvailabilities);
     }
+
+    @Override
+    public List<CarParkAvailability> findAll() {
+        return jpaCarParkAvailabilityRepository.findAll();
+    }
 }

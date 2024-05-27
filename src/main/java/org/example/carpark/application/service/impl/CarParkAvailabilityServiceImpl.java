@@ -2,9 +2,9 @@ package org.example.carpark.application.service.impl;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.example.carpark.application.dto.CarParkAvailabilityResponse;
-import org.example.carpark.application.dto.UpdateResponse;
 import org.example.carpark.domain.model.CarParkAvailability;
 import org.example.carpark.domain.repository.CarParkAvailabilityRepository;
 import org.example.carpark.domain.service.CarParkAvailabilityService;
@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-public class CarParkAvailabilityServiceImpl implements CarParkAvailabilityService {
+public class CarParkAvailabilityServiceImpl extends CarParkAvailabilityService {
 
     private final CarParkAvailabilityRepository carParkAvailabilityRepository;
     private final RestTemplate restTemplate;
@@ -51,18 +51,21 @@ public class CarParkAvailabilityServiceImpl implements CarParkAvailabilityServic
      * @return an UpdateResponse indicating the number of records updated
      */
     @Override
-    public UpdateResponse fetchAvailability() {
+    public List<CarParkAvailability> fetchAvailability() {
         try {
             String jsonResponse = restTemplate.getForObject(url, String.class);
             CarParkAvailabilityResponse response = objectMapper.readValue(jsonResponse, CarParkAvailabilityResponse.class);
-            List<CarParkAvailability> availabilities = transformToDomainModel(response);
-
-            List<CarParkAvailability> carParkAvailabilities = carParkAvailabilityRepository.saveAll(availabilities);
-            return new UpdateResponse(carParkAvailabilities.size());
+            return transformToDomainModel(response);
         } catch (Exception e) {
             log.error("Failed to fetch car park availability", e);
             throw new CarParkAvailabilityException("Failed to fetch car park availability", e);
         }
+
+    }
+
+    @Override
+    public List<CarParkAvailability> updateAvailability(List<CarParkAvailability> carParkAvailabilities) {
+        return carParkAvailabilityRepository.saveAll(carParkAvailabilities);
     }
 
     /**

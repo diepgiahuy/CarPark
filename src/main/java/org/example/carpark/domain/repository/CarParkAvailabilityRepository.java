@@ -12,6 +12,7 @@ public interface CarParkAvailabilityRepository {
 
     List<CarParkAvailability> saveAll(Iterable<CarParkAvailability> carParkInfos);
 
+    List<CarParkAvailability> findAll();
 
 }
 

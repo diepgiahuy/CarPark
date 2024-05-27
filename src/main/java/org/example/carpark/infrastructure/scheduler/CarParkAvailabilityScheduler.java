@@ -4,6 +4,7 @@ import org.example.carpark.domain.service.CarParkAvailabilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class CarParkAvailabilityScheduler {
@@ -28,6 +29,6 @@ public class CarParkAvailabilityScheduler {
      */
     @Scheduled(initialDelay = 60000, fixedRate = 600000)
     public void scheduleAvailabilityFetch() {
-        carParkAvailabilityService.fetchAvailability();
+        carParkAvailabilityService.fetchAndUpdateAvailability();
     }
 }
