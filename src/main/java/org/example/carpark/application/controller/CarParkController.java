@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/carparks")
 @Validated
@@ -77,7 +79,7 @@ public class CarParkController {
     })
 
     @GetMapping("/nearest")
-    public ResponseEntity<Page<CarParkInfoResponse>> findNearestCarPark(
+    public ResponseEntity<List<CarParkInfoResponse>> findNearestCarPark(
             @Parameter(description = "Latitude of the user's location", required = true)
             @RequestParam @NotNull(message = "Latitude is required")
             @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90 degrees")
@@ -106,6 +108,6 @@ public class CarParkController {
                 longitude,
                 page,
                 perPage
-        ), HttpStatus.OK);
+        ).getContent(), HttpStatus.OK);
     }
 }
