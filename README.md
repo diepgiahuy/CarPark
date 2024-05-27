@@ -31,8 +31,8 @@ The Car Park Availability Service is a Spring Boot-based application designed to
 ## Architecture
 This application follows the hexagonal architecture, also known as ports and adapters. The main layers are:
 
-- Domain Layer: Contains service implementations and orchestrates the application's use cases.
-- Application Layer: Contains service implementations and handles the API endpoints.
+- Domain Layer: Contains the business logic and domain models.
+- Application Layer: Contains service implementations and orchestrates the application's use cases.
 - Infrastructure Layer: Contains implementations for persistence, external services, and other technical details.
   
 ## Prerequisites
