@@ -30,17 +30,23 @@ jobs:
           from pathlib import Path
           p=Path('ship_rig_v1.py')
           s=p.read_text()
-          s=s.replace("scene.world.color = (0.025, 0.035, 0.05)", "scene.world.color = (0.055, 0.075, 0.10)")
+          s=s.replace("scene.world.color = (0.025, 0.035, 0.05)", "scene.world.color = (0.065, 0.085, 0.11)")
           s=s.replace("hull.data.materials.append(hull_blue); hull.parent=attitude", "hull.data.materials.append(hull_blue); hull.data.materials.append(hull_red); hull.parent=attitude\nfor poly in hull.data.polygons:\n    poly.material_index = 1 if poly.center.z < 0.0 else 0")
           s=s.replace("red_band = box('HULL_RED_BAND',(0,-3,-5.5),(25.3,165,5.5),hull_red,attitude,0.4)", "# lower hull red paint is assigned directly on HULL_MAIN")
           s=s.replace("cam_ext = new_camera('CAM_EXTERIOR',(-105,-235,80),(0,5,12),44,None)", "cam_ext = new_camera('CAM_EXTERIOR',(-185,-385,105),(0,5,14),45,None)")
-          s=s.replace("cam_pov = new_camera('CAM_BRIDGE_POV',(0,-121.5,34.2),(0,115,13.0),25,cam_ctrl)", "cam_pov = new_camera('CAM_BRIDGE_POV',(0,-119.5,34.7),(0,145,14.0),24,cam_ctrl)")
-          s=s.replace("sun.data.energy=2.4", "sun.data.energy=3.2")
+          s=s.replace("cam_pov = new_camera('CAM_BRIDGE_POV',(0,-121.5,34.2),(0,115,13.0),25,cam_ctrl)", "cam_pov = new_camera('CAM_BRIDGE_POV',(0,-116.2,35.4),(0,165,19.0),25,cam_ctrl)")
+          s=s.replace("console = mat('Console', (0.035,0.055,0.062,1), metallic=0.22, rough=0.33)", "console = mat('Console', (0.10,0.15,0.17,1), metallic=0.20, rough=0.38)")
+          s=s.replace("(x,-110.3,32.95),(1.8,0.12,1.15)", "(x,-110.3,32.25),(1.8,0.12,0.78)")
+          s=s.replace("(x,-110.15,32.95),(1.55,0.035,0.92)", "(x,-110.46,32.25),(1.55,0.035,0.60)")
+          s=s.replace("sun.data.energy=2.4", "sun.data.energy=3.4")
+          s=s.replace("area.data.energy=1200", "area.data.energy=2200")
           old='''def render_still(cam, frame, path, w, h):\n    scene.camera=cam\n    scene.frame_set(frame)\n    scene.render.resolution_x=w; scene.render.resolution_y=h\n    scene.render.filepath=path\n    bpy.ops.render.render(write_still=True)'''
-          new='''def render_still(cam, frame, path, w, h):\n    scene.camera=cam\n    scene.frame_set(frame)\n    scene.render.resolution_x=w; scene.render.resolution_y=h\n    scene.render.filepath=path\n    hidden=[]\n    if cam.name == 'CAM_BRIDGE_POV':\n        for name in ['BRIDGE_HOUSE'] + [f'EXT_BRIDGE_GLASS_{x}' for x in (-18,-12,-6,0,6,12,18)]:\n            ob=bpy.data.objects.get(name)\n            if ob:\n                hidden.append((ob,ob.hide_render)); ob.hide_render=True\n    bpy.context.view_layer.update()\n    bpy.ops.render.render(write_still=True)\n    for ob,state in hidden:\n        ob.hide_render=state\n    bpy.context.view_layer.update()'''
+          new='''def render_still(cam, frame, path, w, h):\n    scene.camera=cam\n    scene.frame_set(frame)\n    scene.render.resolution_x=w; scene.render.resolution_y=h\n    scene.render.filepath=path\n    hidden=[]\n    if cam.name == 'CAM_BRIDGE_POV':\n        names=['BRIDGE_HOUSE'] + [f'EXT_BRIDGE_GLASS_{x}' for x in (-18,-12,-6,0,6,12,18)]\n        for name in names:\n            ob=bpy.data.objects.get(name)\n            if ob:\n                hidden.append((ob,ob.hide_render)); ob.hide_render=True\n    bpy.context.view_layer.update()\n    bpy.ops.render.render(write_still=True)\n    for ob,state in hidden:\n        ob.hide_render=state\n    bpy.context.view_layer.update()'''
           if old not in s:
               raise SystemExit('render_still block not found')
           s=s.replace(old,new)
+          s=s.replace("render_still(cam_pov,30,os.path.join(OUT,'02_bridge_pov.png'),360,640)", "render_still(cam_pov,1,os.path.join(OUT,'02_bridge_pov.png'),360,640)")
+          s=s.replace("render_still(cam_pov,90,os.path.join(OUT,'03_rig_motion.png'),360,640)", "render_still(cam_ext,90,os.path.join(OUT,'03_rig_motion.png'),640,360)")
           p.write_text(s)
           PY
 
