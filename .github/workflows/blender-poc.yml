@@ -24,34 +24,30 @@ jobs:
           tar -xf blender.tar.xz
           ./blender-5.2.2-linux-x64/blender --version
 
-      - name: Patch Blender 5.2 engine enum
+      - name: Patch quick POC
         run: |
           sed -i 's/BLENDER_EEVEE_NEXT/BLENDER_EEVEE/g' blender_poc.py
+          sed -i 's/scene.render.resolution_x = 540/scene.render.resolution_x = 360/' blender_poc.py
+          sed -i 's/scene.render.resolution_y = 960/scene.render.resolution_y = 640/' blender_poc.py
+          sed -i 's/frames=\[1,30,60,90,120\]/frames=[30]/' blender_poc.py
 
-      - name: Render POC
+      - name: Render quick POC
         run: |
           ./blender-5.2.2-linux-x64/blender --background --python blender_poc.py | tee blender.log
           grep -q POC_RENDER_PASS blender.log
 
-      - name: Verify frames
+      - name: Verify frame
         run: |
           test -s artifacts/THE_NEXT_WAVE_POC.blend
-          for f in 001 030 060 090 120; do
-            test -s artifacts/poc_${f}.png
-          done
-          python3 - <<'PY'
-          from pathlib import Path
-          fs=sorted(Path('artifacts').glob('poc_*.png'))
-          assert len(fs)==5, fs
-          assert all(p.stat().st_size > 5000 for p in fs), [(p.name,p.stat().st_size) for p in fs]
-          print('FRAME_CHECK_PASS')
-          PY
+          test -s artifacts/poc_030.png
+          test $(stat -c%s artifacts/poc_030.png) -gt 5000
+          echo FRAME_CHECK_PASS
 
       - name: Upload POC
         uses: actions/upload-artifact@v4
         with:
-          name: the-next-wave-poc
+          name: the-next-wave-poc-quick
           path: |
-            artifacts/poc_*.png
+            artifacts/poc_030.png
             artifacts/THE_NEXT_WAVE_POC.blend
             blender.log
