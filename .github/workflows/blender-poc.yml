@@ -1,0 +1,53 @@
+name: Blender Ship POC
+
+on:
+  push:
+    branches: [blender-poc]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install runtime libs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libx11-xcb1 libxcb1 libxkbcommon0
+
+      - name: Download Blender 5.2.2
+        run: |
+          curl -fL --retry 3 -o blender.tar.xz https://download.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz
+          tar -xf blender.tar.xz
+          ./blender-5.2.2-linux-x64/blender --version
+
+      - name: Render POC
+        run: |
+          ./blender-5.2.2-linux-x64/blender --background --python blender_poc.py | tee blender.log
+          grep -q POC_RENDER_PASS blender.log
+
+      - name: Verify frames
+        run: |
+          test -s artifacts/THE_NEXT_WAVE_POC.blend
+          for f in 001 030 060 090 120; do
+            test -s artifacts/poc_${f}.png
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          fs=sorted(Path('artifacts').glob('poc_*.png'))
+          assert len(fs)==5, fs
+          assert all(p.stat().st_size > 5000 for p in fs), [(p.name,p.stat().st_size) for p in fs]
+          print('FRAME_CHECK_PASS')
+          PY
+
+      - name: Upload POC
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-next-wave-poc
+          path: |
+            artifacts/poc_*.png
+            artifacts/THE_NEXT_WAVE_POC.blend
+            blender.log
