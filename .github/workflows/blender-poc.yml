@@ -24,7 +24,7 @@ jobs:
           tar -xf blender.tar.xz
           ./blender-5.2.2-linux-x64/blender --version
 
-      - name: Patch quick raised-bridge POC
+      - name: Patch visual-QC POC
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -33,14 +33,14 @@ jobs:
           s=s.replace("BLENDER_EEVEE_NEXT","BLENDER_EEVEE")
           s=s.replace("scene.render.resolution_x = 540","scene.render.resolution_x = 360")
           s=s.replace("scene.render.resolution_y = 960","scene.render.resolution_y = 640")
-          s=s.replace("frames=[1,30,60,90,120]","frames=[30]")
+          s=s.replace("frames=[1,30,60,90,120]","frames=[60]")
           marker="# ---------- render 5 proof frames ----------"
-          patch='''# raise bridge to realistic container-ship bridge height after visual QC\nbridge_prefixes = (\"Bridge\", \"Window\", \"Console\", \"Monitor\", \"Screen\", \"Wheel\", \"Throttle\", \"Alarm\", \"Wiper\", \"LeftWall\", \"RightWall\")\nfor ob in bpy.data.objects:\n    if ob.name.startswith(bridge_prefixes):\n        ob.location.z += 9.5\ncam.location = (0, -12.5, 14.8)\ncam.data.lens = 24\nlook_at(cam, (0, 62, 1.8))\n'''
+          patch='''# visual QC pass: realistic raised bridge, cleaner framing, brighter storm exposure\nbridge_prefixes = (\"Bridge\", \"Window\", \"Console\", \"Monitor\", \"Screen\", \"Wheel\", \"Throttle\", \"Alarm\", \"Wiper\", \"LeftWall\", \"RightWall\")\nfor ob in bpy.data.objects:\n    if ob.name.startswith(bridge_prefixes):\n        ob.location.z += 9.5\nif bpy.data.objects.get(\"BridgeCeiling\"):\n    bpy.data.objects[\"BridgeCeiling\"].hide_render = True\nif bpy.data.objects.get(\"ConsoleBase\"):\n    bpy.data.objects[\"ConsoleBase\"].dimensions.z = 1.15\n    bpy.data.objects[\"ConsoleBase\"].location.z -= 0.55\ncam.location = (0, -7.5, 14.8)\ncam.data.lens = 27\nlook_at(cam, (0, 42, 3.5))\nscene.world.color = (0.08, 0.10, 0.13)\nsun.data.energy = 4.0\narea.data.energy = 1250\narea.data.color = (0.32,0.40,0.48)\n'''
           s=s.replace(marker,patch+'\n'+marker)
           p.write_text(s)
           PY
 
-      - name: Render quick POC
+      - name: Render visual-QC POC
         run: |
           ./blender-5.2.2-linux-x64/blender --background --python blender_poc.py | tee blender.log
           grep -q POC_RENDER_PASS blender.log
@@ -48,15 +48,15 @@ jobs:
       - name: Verify frame
         run: |
           test -s artifacts/THE_NEXT_WAVE_POC.blend
-          test -s artifacts/poc_030.png
-          test $(stat -c%s artifacts/poc_030.png) -gt 5000
+          test -s artifacts/poc_060.png
+          test $(stat -c%s artifacts/poc_060.png) -gt 5000
           echo FRAME_CHECK_PASS
 
       - name: Upload POC
         uses: actions/upload-artifact@v4
         with:
-          name: the-next-wave-poc-raised-bridge
+          name: the-next-wave-poc-visual-qc
           path: |
-            artifacts/poc_030.png
+            artifacts/poc_060.png
             artifacts/THE_NEXT_WAVE_POC.blend
             blender.log
