@@ -16,7 +16,7 @@ jobs:
       - name: Install Blender runtime libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libgl1 libx11-xcb1 libxcb1 libxkbcommon0
+          sudo apt-get install -y libegl1 libgl1 libx11-xcb1 libxcb1 libxkbcommon0 python3-pil
 
       - name: Download Blender 5.2.2
         run: |
@@ -24,10 +24,11 @@ jobs:
           tar -xf blender.tar.xz
           ./blender-5.2.2-linux-x64/blender --version
 
-      - name: Apply visual QC patch
+      - name: Apply visual and rig QC patch
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('ship_rig_v1.py')
           s=p.read_text()
           s=s.replace("scene.world.color = (0.025, 0.035, 0.05)", "scene.world.color = (0.065, 0.085, 0.11)")
@@ -40,6 +41,16 @@ jobs:
           s=s.replace("(x,-110.15,32.95),(1.55,0.035,0.92)", "(x,-110.46,32.25),(1.55,0.035,0.60)")
           s=s.replace("sun.data.energy=2.4", "sun.data.energy=3.4")
           s=s.replace("area.data.energy=1200", "area.data.energy=2200")
+
+          # Use direct transform controls for a rigid ship rig. Remove property drivers.
+          s=re.sub(r'(?m)^add_driver\([^\n]+\)\n','',s)
+
+          marker="scene.frame_start=1; scene.frame_end=120"
+          direct_keys='''# direct controller transform animation proof\nfor f,h,pitch,roll,yaw in keys:\n    heave.location.z=h\n    heave.keyframe_insert(data_path='location',frame=f,index=2)\n    attitude.rotation_euler=(math.radians(pitch),math.radians(roll),math.radians(yaw))\n    attitude.keyframe_insert(data_path='rotation_euler',frame=f)\n\nfor f,slide,tip in [(1,0,0),(50,0,0),(75,-3.0,4),(90,-7.0,12),(110,-10.0,20),(120,-10.0,20)]:\n    hero_ctrl.location.x=slide\n    hero_ctrl.rotation_euler.y=math.radians(tip)\n    hero_ctrl.keyframe_insert(data_path='location',frame=f,index=0)\n    hero_ctrl.keyframe_insert(data_path='rotation_euler',frame=f,index=1)\n\nfor w in wipers:\n    for f,sweep in [(1,-18),(20,18),(40,-18),(60,18),(80,-18),(100,18),(120,-18)]:\n        w.rotation_euler.y=math.radians(sweep)\n        w.keyframe_insert(data_path='rotation_euler',frame=f,index=1)\n\n'''
+          if marker not in s:
+              raise SystemExit('frame marker not found')
+          s=s.replace(marker,direct_keys+marker)
+
           old='''def render_still(cam, frame, path, w, h):\n    scene.camera=cam\n    scene.frame_set(frame)\n    scene.render.resolution_x=w; scene.render.resolution_y=h\n    scene.render.filepath=path\n    bpy.ops.render.render(write_still=True)'''
           new='''def render_still(cam, frame, path, w, h):\n    scene.camera=cam\n    scene.frame_set(frame)\n    scene.render.resolution_x=w; scene.render.resolution_y=h\n    scene.render.filepath=path\n    hidden=[]\n    if cam.name == 'CAM_BRIDGE_POV':\n        names=['BRIDGE_HOUSE'] + [f'EXT_BRIDGE_GLASS_{x}' for x in (-18,-12,-6,0,6,12,18)]\n        for name in names:\n            ob=bpy.data.objects.get(name)\n            if ob:\n                hidden.append((ob,ob.hide_render)); ob.hide_render=True\n    bpy.context.view_layer.update()\n    bpy.ops.render.render(write_still=True)\n    for ob,state in hidden:\n        ob.hide_render=state\n    bpy.context.view_layer.update()'''
           if old not in s:
@@ -55,7 +66,7 @@ jobs:
           ./blender-5.2.2-linux-x64/blender --background --python ship_rig_v1.py | tee blender.log
           grep -q SHIP_RIG_V1_PASS blender.log
 
-      - name: Verify outputs
+      - name: Verify outputs and actual rig motion
         run: |
           test -s artifacts/THE_NEXT_WAVE_ship_rig_v1.blend
           test -s artifacts/01_exterior.png
@@ -64,6 +75,7 @@ jobs:
           test -s artifacts/RIG_README.txt
           python3 - <<'PY'
           from pathlib import Path
+          from PIL import Image, ImageChops, ImageStat
           files=[
               Path('artifacts/01_exterior.png'),
               Path('artifacts/02_bridge_pov.png'),
@@ -71,7 +83,12 @@ jobs:
               Path('artifacts/THE_NEXT_WAVE_ship_rig_v1.blend')
           ]
           assert all(p.stat().st_size > 5000 for p in files), [(p.name,p.stat().st_size) for p in files]
-          print('SHIP_RIG_VERIFY_PASS')
+          a=Image.open('artifacts/01_exterior.png').convert('RGB')
+          b=Image.open('artifacts/03_rig_motion.png').convert('RGB')
+          d=ImageChops.difference(a,b)
+          mean=sum(ImageStat.Stat(d).mean)/3.0
+          assert mean > 2.0, f'rig motion visual diff too small: {mean}'
+          print('SHIP_RIG_VERIFY_PASS', 'motion_mean_diff=', mean)
           PY
 
       - name: Upload ship rig
