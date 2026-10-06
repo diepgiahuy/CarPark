@@ -24,12 +24,21 @@ jobs:
           tar -xf blender.tar.xz
           ./blender-5.2.2-linux-x64/blender --version
 
-      - name: Patch quick POC
+      - name: Patch quick raised-bridge POC
         run: |
-          sed -i 's/BLENDER_EEVEE_NEXT/BLENDER_EEVEE/g' blender_poc.py
-          sed -i 's/scene.render.resolution_x = 540/scene.render.resolution_x = 360/' blender_poc.py
-          sed -i 's/scene.render.resolution_y = 960/scene.render.resolution_y = 640/' blender_poc.py
-          sed -i 's/frames=\[1,30,60,90,120\]/frames=[30]/' blender_poc.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('blender_poc.py')
+          s=p.read_text()
+          s=s.replace("BLENDER_EEVEE_NEXT","BLENDER_EEVEE")
+          s=s.replace("scene.render.resolution_x = 540","scene.render.resolution_x = 360")
+          s=s.replace("scene.render.resolution_y = 960","scene.render.resolution_y = 640")
+          s=s.replace("frames=[1,30,60,90,120]","frames=[30]")
+          marker="# ---------- render 5 proof frames ----------"
+          patch='''# raise bridge to realistic container-ship bridge height after visual QC\nbridge_prefixes = (\"Bridge\", \"Window\", \"Console\", \"Monitor\", \"Screen\", \"Wheel\", \"Throttle\", \"Alarm\", \"Wiper\", \"LeftWall\", \"RightWall\")\nfor ob in bpy.data.objects:\n    if ob.name.startswith(bridge_prefixes):\n        ob.location.z += 9.5\ncam.location = (0, -12.5, 14.8)\ncam.data.lens = 24\nlook_at(cam, (0, 62, 1.8))\n'''
+          s=s.replace(marker,patch+'\n'+marker)
+          p.write_text(s)
+          PY
 
       - name: Render quick POC
         run: |
@@ -46,7 +55,7 @@ jobs:
       - name: Upload POC
         uses: actions/upload-artifact@v4
         with:
-          name: the-next-wave-poc-quick
+          name: the-next-wave-poc-raised-bridge
           path: |
             artifacts/poc_030.png
             artifacts/THE_NEXT_WAVE_POC.blend
