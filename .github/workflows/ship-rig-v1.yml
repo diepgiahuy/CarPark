@@ -1,0 +1,61 @@
+name: Ship Rig v1
+
+on:
+  push:
+    branches: [ship-rig-v1]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Blender runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libx11-xcb1 libxcb1 libxkbcommon0
+
+      - name: Download Blender 5.2.2
+        run: |
+          curl -fL --retry 3 -o blender.tar.xz https://download.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz
+          tar -xf blender.tar.xz
+          ./blender-5.2.2-linux-x64/blender --version
+
+      - name: Build rig and previews
+        run: |
+          ./blender-5.2.2-linux-x64/blender --background --python ship_rig_v1.py | tee blender.log
+          grep -q SHIP_RIG_V1_PASS blender.log
+
+      - name: Verify outputs
+        run: |
+          test -s artifacts/THE_NEXT_WAVE_ship_rig_v1.blend
+          test -s artifacts/01_exterior.png
+          test -s artifacts/02_bridge_pov.png
+          test -s artifacts/03_rig_motion.png
+          test -s artifacts/RIG_README.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          files=[
+              Path('artifacts/01_exterior.png'),
+              Path('artifacts/02_bridge_pov.png'),
+              Path('artifacts/03_rig_motion.png'),
+              Path('artifacts/THE_NEXT_WAVE_ship_rig_v1.blend')
+          ]
+          assert all(p.stat().st_size > 5000 for p in files), [(p.name,p.stat().st_size) for p in files]
+          print('SHIP_RIG_VERIFY_PASS')
+          PY
+
+      - name: Upload ship rig
+        uses: actions/upload-artifact@v4
+        with:
+          name: the-next-wave-ship-rig-v1
+          path: |
+            artifacts/THE_NEXT_WAVE_ship_rig_v1.blend
+            artifacts/01_exterior.png
+            artifacts/02_bridge_pov.png
+            artifacts/03_rig_motion.png
+            artifacts/RIG_README.txt
+            blender.log
