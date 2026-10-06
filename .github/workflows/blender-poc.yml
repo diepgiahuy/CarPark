@@ -24,6 +24,10 @@ jobs:
           tar -xf blender.tar.xz
           ./blender-5.2.2-linux-x64/blender --version
 
+      - name: Patch Blender 5.2 engine enum
+        run: |
+          sed -i 's/BLENDER_EEVEE_NEXT/BLENDER_EEVEE/g' blender_poc.py
+
       - name: Render POC
         run: |
           ./blender-5.2.2-linux-x64/blender --background --python blender_poc.py | tee blender.log
